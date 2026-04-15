@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Birthday</title>
+
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  height:100vh;
+  overflow:hidden;
+  color:white;
+}
+
+/* Background */
+body::before {
+  content:"";
+  position:fixed;
+  width:200%;
+  height:200%;
+  background: linear-gradient(45deg,#1f1c2c,#928dab,#2b5876,#4e4376);
+  animation: moveBg 12s infinite linear;
+  z-index:-2;
+}
+
+@keyframes moveBg {
+  0%{transform:translate(0,0);}
+  50%{transform:translate(-25%,-25%);}
+  100%{transform:translate(0,0);}
+}
+
+/* Game */
+#gameArea {
+  width:90%;
+  max-width:500px;
+  height:300px;
+  margin:100px auto;
+  background:rgba(255,255,255,0.1);
+  backdrop-filter:blur(15px);
+  border-radius:20px;
+  position:relative;
+  overflow:hidden;
+}
+
+.heart {
+  position:absolute;
+  font-size:34px;
+  cursor:pointer;
+}
+
+/* Gift */
+#giftBox { display:none; text-align:center; }
+
+/* Gallery */
+#gallery {
+  display:none;
+  position:fixed;
+  width:100%;
+  height:100%;
+  top:0;
+  left:0;
+}
+
+#bgBlur {
+  position:absolute;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  filter:blur(30px) brightness(0.6);
+}
+
+#photo {
+  position:absolute;
+  width:90%;
+  max-width:500px;
+  height:80%;
+  object-fit:cover;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  border-radius:15px;
+  transition:all 1s ease;
+}
+
+/* End Screen */
+#endScreen {
+  display:none;
+  position:fixed;
+  width:100%;
+  height:100%;
+  justify-content:center;
+  align-items:center;
+}
+
+#final {
+  font-size:45px;
+}
+
+/* Letter */
+#letterContainer {
+  display:none;
+  position:fixed;
+  width:100%;
+  height:100%;
+  justify-content:center;
+  align-items:center;
+}
+
+#letter {
+  width:85%;
+  max-width:500px;
+  padding:25px;
+  background:rgba(255,255,255,0.1);
+  backdrop-filter:blur(15px);
+  border-radius:15px;
+}
+
+/* Confetti */
+.confetti {
+  position:fixed;
+  width:10px;
+  height:10px;
+  top:-10px;
+  animation: fall linear forwards;
+}
+@keyframes fall {
+  to { transform:translateY(100vh) rotate(720deg); opacity:0; }
+}
+
+/* Firework */
+.firework {
+  position:fixed;
+  width:5px;
+  height:5px;
+  background:white;
+  border-radius:50%;
+}
+</style>
+</head>
+
+<body>
+
+<h2 style="text-align:center">Catch the hearts 🤍</h2>
+<p style="text-align:center">Collect 5 to unlock</p>
+
+<div id="gameArea"></div>
+<p style="text-align:center">Score: <span id="score">0</span></p>
+
+<div id="giftBox">
+  <h2>Open your gift</h2>
+  <button onclick="openGift()">Open</button>
+</div>
+
+<div id="gallery">
+  <img id="bgBlur">
+  <img id="photo">
+</div>
+
+<div id="endScreen">
+  <div id="final">Happy b'day da 🤍</div>
+</div>
+
+<div id="letterContainer">
+  <div id="letter">
+    <h2>Happy b’day da 🎉❤️</h2>
+    <p id="text"></p>
+  </div>
+</div>
+
+<!-- AUDIO -->
+<audio id="bgMusic" loop src="music.mp3"></audio>
+<audio id="clickSound" src="https://www.soundjay.com/buttons/sounds/button-16.mp3"></audio>
+<audio id="fireSound" src="firework.mp3"></audio>
+<audio id="typeSound" src="typing.mp3"></audio>
+
+<script>
+let score = 0;
+let gameArea = document.getElementById("gameArea");
+
+/* HEART GAME */
+function createHeart(){
+  let h=document.createElement("div");
+  h.innerHTML="🤍";
+  h.className="heart";
+
+  h.style.left=Math.random()*90+"%";
+  h.style.top="0px";
+
+  let fall=setInterval(()=>{
+    h.style.top=parseInt(h.style.top)+3+"px";
+    if(parseInt(h.style.top)>260){
+      clearInterval(fall);
+      h.remove();
+    }
+  },50);
+
+  h.onclick=function(){
+    let click=document.getElementById("clickSound");
+    click.currentTime=0;
+    click.play();
+
+    score++;
+    document.getElementById("score").innerText=score;
+
+    clearInterval(fall);
+    this.remove();
+
+    if(score===5) showGift();
+  };
+
+  gameArea.appendChild(h);
+}
+setInterval(createHeart,1200);
+
+/* GIFT */
+function showGift(){
+  gameArea.style.display="none";
+  giftBox.style.display="block";
+}
+
+function openGift(){
+  giftBox.style.display="none";
+  gallery.style.display="block";
+
+  let music=document.getElementById("bgMusic");
+  music.volume=0.3;
+  music.play();
+
+  launchConfetti();
+  startSlideshow();
+}
+
+/* CONFETTI */
+function launchConfetti(){
+  for(let i=0;i<80;i++){
+    let c=document.createElement("div");
+    c.className="confetti";
+    c.style.left=Math.random()*100+"vw";
+    c.style.background=`hsl(${Math.random()*360},100%,50%)`;
+    c.style.animationDuration=(2+Math.random()*3)+"s";
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),5000);
+  }
+}
+
+/* PHOTOS */
+let photos=[
+"photo1.jpg","photo2.jpg","photo3.jpg","photo4.jpg","photo5.jpg",
+"photo6.jpg","photo7.jpg","photo8.jpg","photo9.jpeg","photo10.jpeg",
+"photo11.jpeg","photo12.jpeg","photo13.jpeg","photo14.jpeg","photo15.jpeg"
+];
+
+let index=0;
+
+function showPhoto(){
+  let photo=document.getElementById("photo");
+  let bg=document.getElementById("bgBlur");
+
+  photo.style.opacity=0;
+
+  setTimeout(()=>{
+    photo.src=photos[index];
+    bg.src=photos[index];
+    photo.style.opacity=1;
+  },300);
+}
+
+function startSlideshow(){
+  showPhoto();
+  let i=setInterval(()=>{
+    index++;
+    if(index<photos.length) showPhoto();
+    else{
+      clearInterval(i);
+      endScene();
+    }
+  },3500);
+}
+
+/* FIREWORK */
+function launchFireworks(){
+  let fire=document.getElementById("fireSound");
+  fire.currentTime=0;
+  fire.play();
+
+  for(let i=0;i<5;i++){
+    setTimeout(()=>{
+      let x=Math.random()*window.innerWidth;
+      let y=Math.random()*window.innerHeight/2;
+
+      for(let j=0;j<30;j++){
+        let f=document.createElement("div");
+        f.className="firework";
+
+        let angle=Math.random()*2*Math.PI;
+        let dist=80;
+
+        f.style.left=x+"px";
+        f.style.top=y+"px";
+
+        document.body.appendChild(f);
+
+        f.animate([
+          {transform:"translate(0,0)",opacity:1},
+          {transform:`translate(${Math.cos(angle)*dist}px,${Math.sin(angle)*dist}px)`,opacity:0}
+        ],{duration:1000});
+
+        setTimeout(()=>f.remove(),1000);
+      }
+    },i*400);
+  }
+}
+
+/* END */
+function endScene(){
+  document.getElementById("gallery").style.display="none";
+  document.getElementById("endScreen").style.display="flex";
+
+  launchFireworks();
+  fadeMusic();
+
+  setTimeout(showLetter,3000);
+}
+
+/* FADE MUSIC */
+function fadeMusic(){
+  let music=document.getElementById("bgMusic");
+  let vol=1;
+  let fade=setInterval(()=>{
+    if(vol>0){
+      vol-=0.05;
+      music.volume=vol;
+    }else clearInterval(fade);
+  },200);
+}
+
+/* LETTER */
+function showLetter(){
+  document.getElementById("endScreen").style.display="none";
+  document.getElementById("letterContainer").style.display="flex";
+
+  let message=`Let this be a wonderful year for you…
+may everything happen just the way you wish ✨
+and may all your dreams come true 💫`;
+
+  let i=0;
+
+  function type(){
+    let sound=document.getElementById("typeSound");
+
+    if(i<message.length){
+      let char = message.charAt(i);
+
+      document.getElementById("text").innerHTML +=
+        char === "\n" ? "<br>" : char;
+
+      if(char !== " " && char !== "\n"){
+        sound.currentTime = 0;
+        sound.play();
+      }
+
+      i++;
+      setTimeout(type,35);
+    } else {
+      setTimeout(showSignature,500);
+    }
+  }
+
+  function showSignature(){
+    let sign = document.createElement("p");
+    sign.style.marginTop="20px";
+    sign.style.textAlign="right";
+    sign.innerHTML="— Yours 💫";
+    document.getElementById("text").appendChild(sign);
+  }
+
+  type();
+}
+</script>
+
+</body>
+</html>
